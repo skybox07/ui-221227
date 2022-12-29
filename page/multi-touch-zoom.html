@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="DinoWorks Inc. 디노웍스(주)" />
+    <meta name="apple-mobile-web-app-title" content="디노웍스 모바일 UI" />
+    <title>멀티터치(Zoom) | 디노웍스(주) 모바일 UI 라이브러리</title>
+    <meta name="description" content="디노웍스(주) UI 라이브러리" />
+    <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="../fa/css/all.min.css" rel="stylesheet" />
+    <link href="../css/web-font.css" rel="stylesheet" />
+    <link href="../css/style-pc.css" rel="stylesheet" media="screen and (min-width : 1024px)" />
+    <link href="../css/style-m.css" rel="stylesheet" media="screen and (max-width : 1023.9px)" />
+    <script src="../js/jquery-3.6.1.min.js"></script>
+    <script src="../js/dino-common.js"></script>
+  </head>
+  <body class="main">
+    <div id="wrapper">
+      <a href="#main" id="skip-nav">본문 바로가기</a>
+      <header id="header">
+        <h1><a href="../index.html"><img alt="DinoWorks(디노웍스)" src="../img/logo-color.png" /></a></h1>
+      </header>
+
+      <main id="main">
+        <div class="content-box"><img alt="" src="../img/image-slide/slide-image-01.jpg" /></div>
+        <div class="event-type"></div>
+      </main>
+    </div> <!-- #wrapper  -->
+
+<script>
+'use strict';
+
+// 자바스크립트로 만들기// <img alt="" src="../img/image-slide/slide-image-01.jpg" /> //실제 움직여야 되는 대상
+
+
+applyZoomUI('div.content-box');
+
+function applyZoomUI() {
+  const zoomBox = document.querySelector(selector);
+  const zoomElement = zoomBox.querySelector('img');
+  const msgBox =document.querySelector('div.event-type');
+  let startDist = 0; //처음두손가락 찍엇을때 그 거리
+  let delDist = 0; //디스턴스가 얼마나 줄어들고 잇는지 
+  let scale = 1; //현재움직이는 배열
+  let prevScale = 1; // 바지막에 움직이는 배열
+
+
+  zoomBox.addEventListener('touchstart', function(e) {
+    // 조건달아서 실행하기
+    if (e.touches.length >= 2) {
+      e.preventDefault(); //기본적인 확대 축소는 막힘
+      let x1 = e.touches[0].clientX;
+      let x2 = e.touches[1].clientX;
+      let y1 = e.touches[0].clientX;
+      let y2 = e.touches[1].clientX;
+
+      startDist =Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));//길이알아내기
+      //msgBox.insertAdjacentHTML('beforeend', `<span>${startDist}</span> ||`);
+
+
+      document.addEventListener('touchmove', touchMove, false); //스타트할때 동작
+      document.addEventListener('touchend', touchEnd, false); //끝내는동작
+
+
+
+    }
+    
+   //msgBox.insertAdjacentHTML('beforeend', `<span>${x1} ${y1} ${x2} ${y2}</span>`).log('touchstart');//좌표
+
+  }, false); //터치스타트ㅔ대한 정의
+
+  function touchMove(e) {
+    let x1 = e.touches[0].clientX;
+    let x2 = e.touches[1].clientX;
+    let y1 = e.touches[0].clientX;
+    let y2 = e.touches[1].clientX;
+    // let scale = 0;
+    scale = (delDist / startDist) * prevScale; //기존 마무리값(1.5)에서 시작됨
+    delDist = Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+    msgBox.insertAdjacentHTML('beforeend', `<span>${scale}</span> ||`);
+    zoomElement.style.transform = 'scale('+scale+')';
+  }
+
+  function touchEnd(e) {
+    prevScale = scale;
+    document.removeEventListener('touchmove', touchMove); //스타트할때 동작
+    document.removeEventListener('touchend', touchEnd);
+    //msgBox.insertAdjacentHTML('beforeend', `<span>end</span> ||`);
+  }
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//제이쿼리로 짠방식 //코드는 드레그와 비슷함
+/*applyZoom('div.content-box');
+
+function applyZoom(selector) {
+  var startDist = 0;
+  var delDist = 0;
+  var scaleNow = 1;
+  var scalePrev = 1;
+
+  $(selector).on('touchstart', function(e) {
+    if (e.touches.length >= 2) {
+      e.preventDefault();
+      var coordX1 = e.touches[0].clientX;
+      var coordY1 = e.touches[0].clientY;
+      var coordX2 = e.touches[1].clientX;
+      var coordY2 = e.touches[1].clientY;
+      startDist = Math.sqrt(Math.pow(coordX2 - coordX1, 2) + Math.pow(coordY2 - coordY1, 2));
+
+      $(document).on('touchmove', function(e) {
+        var coordX1 = e.touches[0].clientX;
+        var coordY1 = e.touches[0].clientY;
+        var coordX2 = e.touches[1].clientX;
+        var coordY2 = e.touches[1].clientY;
+        delDist = Math.sqrt(Math.pow(coordX2 - coordX1, 2) + Math.pow(coordY2 - coordY1, 2));
+        scaleNow = (delDist / startDist) * scalePrev;
+        if (scaleNow < 1) scaleNow = 1;
+        $(selector).find('img').css({'transform': 'scale(' + scaleNow + ')'});
+        $('div.event-type').append('<span>' + scaleNow +'</span> ');
+      });
+
+      $(document).on('touchend', function() {
+        scalePrev = scaleNow;
+        $(document).off('touchmove touchend');
+      });
+    }
+  });
+}
+*/
+
+</script>
+  </body>
+</html>
+
+
